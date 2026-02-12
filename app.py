@@ -66,12 +66,11 @@ st.markdown("""
 # ============================================================
 @st.cache_data(ttl=300)
 def load_data_from_sheets():
-    """Google Sheets APIからデータ取得"""
+    """Google Sheets APIからデータ取得（ローカル: credentials.json / Cloud: st.secrets）"""
     try:
         import gspread
         from google.oauth2.service_account import Credentials
 
-        creds_path = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "credentials.json")
         spreadsheet_id = os.getenv(
             "SOURCE_SPREADSHEET_ID",
             "1XnSOo0lzOmGBrn-oqxoGR2QRlKppaGYXbVLHmwOcHNk",
@@ -81,7 +80,17 @@ def load_data_from_sheets():
             "https://www.googleapis.com/auth/spreadsheets.readonly",
             "https://www.googleapis.com/auth/drive.readonly",
         ]
-        creds = Credentials.from_service_account_file(creds_path, scopes=scopes)
+
+        # Streamlit Cloud: st.secrets から認証
+        if "gcp_service_account" in st.secrets:
+            creds = Credentials.from_service_account_info(
+                st.secrets["gcp_service_account"], scopes=scopes
+            )
+        else:
+            # ローカル: credentials.json ファイルから認証
+            creds_path = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "credentials.json")
+            creds = Credentials.from_service_account_file(creds_path, scopes=scopes)
+
         gc = gspread.authorize(creds)
 
         sh = gc.open_by_key(spreadsheet_id)
