@@ -1,0 +1,8 @@
+streamlit
+gspread
+google-auth
+google-auth-oauthlib
+pandas
+plotly
+google-generativeai
+python-dotenv
